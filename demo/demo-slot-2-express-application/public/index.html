@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Express CRUD Demo</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+        }
+
+        button {
+            margin: 5px;
+            padding: 8px 12px;
+        }
+
+        input {
+            margin: 5px;
+            padding: 5px;
+        }
+
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Express CRUD Demo - Articles</h1>
+
+    <!-- GET All -->
+    <button onclick="getAll()">GET All</button>
+
+    <!-- GET by ID -->
+    <div>
+        <input id="searchId" type="number" placeholder="Enter article id" />
+        <button onclick="getOne()">GET By ID</button>
+    </div>
+
+    <!-- POST new -->
+    <div>
+        <input id="newTitle" placeholder="Title" />
+        <input id="newText" placeholder="Text" />
+        <button onclick="add()">POST New</button>
+    </div>
+
+    <!-- PUT update -->
+    <div>
+        <input id="updateId" type="number" placeholder="ID to update" />
+        <input id="updateTitle" placeholder="New title" />
+        <input id="updateText" placeholder="New text" />
+        <button onclick="update()">PUT Update</button>
+    </div>
+
+    <!-- DELETE -->
+    <div>
+        <input id="deleteId" type="number" placeholder="ID to delete" />
+        <button onclick="remove()">DELETE</button>
+    </div>
+
+    <h2>Result:</h2>
+    <div id="result">Click a button to test API...</div>
+
+    <script>
+        // Đặt đường dẫn gốc (base URL) cho API
+        const base = "/articles";
+
+        // =========================
+        // GET all articles
+        // =========================
+        async function getAll() {
+            // Gửi request GET đến /articles
+            const res = await fetch(base);   // fetch trả về Promise -> phải await để lấy Response
+            const data = await res.json();   // res.json() cũng trả về Promise -> phải await tiếp
+            show("GET /articles", data);     // Sau khi có data thì hiển thị
+        }
+
+
+        // =========================
+        // GET one article by id
+        // =========================
+        async function getOne() {
+            // Lấy giá trị id từ ô input #searchId
+            const id = document.getElementById("searchId").value;
+            // Nếu chưa nhập id thì cảnh báo
+            if (!id) return alert("Vui lòng nhập id");
+            // Gửi request GET đến /articles/:id
+            const res = await fetch(base + "/" + id);
+            // Parse JSON từ response
+            const data = await res.json();
+            // Hiển thị kết quả (JSON thô)
+            show("GET /articles/" + id, data);
+        }
+
+        // =========================
+        // POST (tạo mới một article)
+        // =========================
+        async function add() {
+            // Lấy title và text từ input
+            const title = document.getElementById("newTitle").value;
+            const text = document.getElementById("newText").value;
+            // Kiểm tra rỗng
+            if (!title || !text) return alert("Nhập đủ title và text");
+
+            // Gửi request POST với body JSON
+            const res = await fetch(base, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }, // báo server biết đang gửi JSON
+                body: JSON.stringify({ title, text })           // chuyển object -> JSON string
+            });
+            // Parse JSON trả về (article vừa tạo)
+            const data = await res.json();
+            // Hiển thị
+            show("POST /articles", data);
+        }
+
+        // =========================
+        // PUT (cập nhật một article)
+        // =========================
+        async function update() {
+            // Lấy id, title, text từ input
+            const id = document.getElementById("updateId").value;
+            const title = document.getElementById("updateTitle").value;
+            const text = document.getElementById("updateText").value;
+            // Kiểm tra id bắt buộc
+            if (!id) return alert("Vui lòng nhập id để update");
+
+            // Gửi request PUT đến /articles/:id
+            const res = await fetch(base + "/" + id, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, text }) // chỉ gửi các trường cần update
+            });
+            // Parse kết quả
+            const data = await res.json();
+            // Hiển thị
+            show("PUT /articles/" + id, data);
+        }
+
+        // =========================
+        // DELETE (xóa một article)
+        // =========================
+        async function remove() {
+            // Lấy id cần xóa
+            const id = document.getElementById("deleteId").value;
+            // Kiểm tra nhập id
+            if (!id) return alert("Vui lòng nhập id để xóa");
+
+            // Gửi request DELETE đến /articles/:id
+            const res = await fetch(base + "/" + id, { method: "DELETE" });
+            // Parse kết quả JSON
+            const data = await res.json();
+            // Hiển thị
+            show("DELETE /articles/" + id, data);
+        }
+
+        // =========================
+        // Hàm hiển thị kết quả dạng JSON thô
+        // =========================
+        function show(action, data) {
+            // Ghi kết quả vào thẻ #result
+            document.getElementById("result").innerHTML =
+                `<b>${action}</b><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            // In log ra console (F12 -> tab Console)
+            console.log("[CLIENT]", action, data);
+        }
+
+        // =========================
+        // Hàm hiển thị kết quả dạng bảng (dùng cho GET all)
+        // =========================
+        function showTable(action, data) {
+            // Nếu kết quả không phải mảng thì fallback về show()
+            if (!Array.isArray(data)) return show(action, data);
+
+            // Tạo HTML bảng
+            let html = `<b>${action}</b>`;
+            html += `<table><tr><th>ID</th><th>Title</th><th>Text</th></tr>`;
+            // Duyệt mảng articles để tạo hàng trong bảng
+            data.forEach(a => {
+                html += `<tr><td>${a.id}</td><td>${a.title}</td><td>${a.text}</td></tr>`;
+            });
+            html += `</table>`;
+
+            // Đặt vào #result
+            document.getElementById("result").innerHTML = html;
+            // In log ra console
+            console.log("[CLIENT]", action, data);
+        }
+    </script>
+
+</body>
+
+</html>
