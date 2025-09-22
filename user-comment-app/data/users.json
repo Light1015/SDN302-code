@@ -1,0 +1,5 @@
+[
+  { "_id": { "$oid": "650000000000000000000001" }, "name": "Alice", "email": "alice@example.com" },
+  { "_id": { "$oid": "650000000000000000000002" }, "name": "Bob", "email": "bob@example.com" },
+  { "_id": { "$oid": "650000000000000000000003" }, "name": "Charlie", "email": "charlie@example.com" }
+]

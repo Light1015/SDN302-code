@@ -1,0 +1,5 @@
+[
+  { "content": "Hello world!", "user": { "$oid": "650000000000000000000001" } },
+  { "content": "Nice to meet you!", "user": { "$oid": "650000000000000000000002" } },
+  { "content": "This is a test comment", "user": { "$oid": "650000000000000000000003" } }
+]
