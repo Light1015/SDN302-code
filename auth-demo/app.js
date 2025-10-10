@@ -124,7 +124,6 @@ app.post('/register', async (req, res) => {
     const saltRounds = 10;
     const hash = await bcrypt.hash(password, saltRounds);
     console.log('[REGISTER]', email, '=> bcrypt hash =', hash);
-
     const user = { id: USERS.length + 1, email: email.toLowerCase(), hash, role: 'user', otpSecret: null };
     USERS.push(user);
 
